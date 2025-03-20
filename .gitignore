@@ -1,0 +1,18 @@
+# Archivos sensibles
+.env
+db.sqlite3
+
+# Archivos innecesarios
+__pycache__/
+*.pyc
+*.pyo
+
+# Entorno virtual de Python
+venv/
+env/
+
+# Archivos de configuración de VSCode (opcional)
+.vscode/
+
+# Archivos de logs
+*.log
