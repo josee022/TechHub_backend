@@ -1,10 +1,10 @@
-from rest_framework import generics, permissions  # Vistas basadas en clases y control de permisos
+from rest_framework import generics, permissions, status  # Vistas basadas en clases y control de permisos
 from rest_framework_simplejwt.views import TokenObtainPairView  # Login con JWT (access y refresh tokens)
 from rest_framework.views import APIView  # Vistas personalizadas
 from rest_framework.response import Response  # Respuestas JSON
 from rest_framework.permissions import IsAuthenticated  # Restringe acceso a usuarios autenticados
-from .models import CustomUser  # Modelo de usuario personalizado
-from .serializers import UserSerializer, RegisterSerializer  # Serializadores para manejar usuarios
+from .models import CustomUser, Profile  # Modelo de usuario personalizado
+from .serializers import UserSerializer, RegisterSerializer, ProfileSerializer  # Serializadores para manejar usuarios
 from rest_framework_simplejwt.tokens import RefreshToken  # Para invalidar tokens en el logout
 
 class RegisterView(generics.CreateAPIView):
@@ -42,3 +42,23 @@ class LogoutView(APIView):
             return Response({"message": "Logout exitoso"}, status=200)
         except Exception as e:
             return Response({"error": str(e)}, status=400)
+
+class ProfileView(APIView):
+    """Vista para que un usuario autenticado pueda ver y actualizar su perfil."""
+    permission_classes = [IsAuthenticated]  # Solo usuarios autenticados pueden acceder
+
+    def get(self, request):
+        """Obtener los datos del perfil del usuario autenticado."""
+        profile = request.user.profile  # Accede al perfil del usuario autenticado
+        serializer = ProfileSerializer(profile)
+        return Response(serializer.data)
+
+    def put(self, request):
+        """Actualizar los datos del perfil del usuario autenticado."""
+        profile = request.user.profile
+        serializer = ProfileSerializer(profile, data=request.data, partial=True)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

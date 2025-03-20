@@ -1,6 +1,7 @@
 from rest_framework import serializers  # Serializadores de DRF
 from django.contrib.auth.hashers import make_password  # Encripta contraseñas
 from .models import CustomUser  # Modelo de usuario personalizado
+from .models import Profile  # Modelo de profile personalizado
 
 class UserSerializer(serializers.ModelSerializer):
     """ Serializador para mostrar información del usuario (sin contraseña). """
@@ -19,3 +20,9 @@ class RegisterSerializer(serializers.ModelSerializer):
         """ Encripta la contraseña antes de guardar el usuario. """
         validated_data['password'] = make_password(validated_data['password'])
         return super().create(validated_data)  # Guarda el usuario con la contraseña encriptada
+
+class ProfileSerializer(serializers.ModelSerializer):
+    """Serializador para actualizar el perfil del usuario."""
+    class Meta:
+        model = Profile
+        fields = ['avatar', 'bio', 'location']  # Campos que el usuario puede actualizar
