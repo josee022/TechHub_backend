@@ -3,9 +3,11 @@ from rest_framework_simplejwt.views import TokenObtainPairView  # Login con JWT 
 from rest_framework.views import APIView  # Vistas personalizadas
 from rest_framework.response import Response  # Respuestas JSON
 from rest_framework.permissions import IsAuthenticated  # Restringe acceso a usuarios autenticados
+from rest_framework_simplejwt.tokens import RefreshToken  # Para invalidar tokens en el logout
+from rest_framework.exceptions import PermissionDenied  # Importar excepción para denegar permisos
 from .models import CustomUser, Profile  # Modelo de usuario personalizado
 from .serializers import UserSerializer, RegisterSerializer, ProfileSerializer  # Serializadores para manejar usuarios
-from rest_framework_simplejwt.tokens import RefreshToken  # Para invalidar tokens en el logout
+from .permissions import IsOwnerOrAdmin # Permisos personalizados
 
 class RegisterView(generics.CreateAPIView):
     """ Registra nuevos usuarios (sin autenticación previa). """
@@ -45,19 +47,31 @@ class LogoutView(APIView):
 
 class ProfileView(APIView):
     """Vista para que un usuario autenticado pueda ver y actualizar su perfil."""
-    permission_classes = [IsAuthenticated]  # Solo usuarios autenticados pueden acceder
+    permission_classes = [IsAuthenticated, IsOwnerOrAdmin]  # Solo autenticados, permisos aplicados
 
-    def get(self, request):
-        """Obtener los datos del perfil del usuario autenticado."""
-        profile = request.user.profile  # Accede al perfil del usuario autenticado
+    def get_object(self, request, user_id=None):
+        """Obtiene el perfil del usuario:"""
+        if user_id:  # Si se pasa un ID en la URL...
+            if request.user.role == "admin":  # Solo los admins pueden acceder a perfiles de otros usuarios
+                return Profile.objects.get(user__id=user_id)
+            else:
+                raise PermissionDenied("No tienes permisos para acceder a este perfil.") # Bloquear acceso a otros perfiles
+
+        return request.user.profile  # Si no se especifica ID, se accede al propio perfil
+
+    def get(self, request, user_id=None):
+        """Obtener los datos del perfil del usuario autenticado o de otro usuario (si es admin)."""
+        profile = self.get_object(request, user_id)  # Obtiene el perfil correcto
+        self.check_object_permissions(request, profile)  # Aplica los permisos
         serializer = ProfileSerializer(profile)
         return Response(serializer.data)
 
-    def put(self, request):
-        """Actualizar los datos del perfil del usuario autenticado."""
-        profile = request.user.profile
-        serializer = ProfileSerializer(profile, data=request.data, partial=True)
+    def put(self, request, user_id=None):
+        """Actualizar los datos del perfil del usuario autenticado o de otro usuario (si es admin)."""
+        profile = self.get_object(request, user_id)  # Obtiene el perfil correcto
+        self.check_object_permissions(request, profile)  # Aplica los permisos
 
+        serializer = ProfileSerializer(profile, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)

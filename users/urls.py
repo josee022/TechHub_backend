@@ -8,6 +8,6 @@ urlpatterns = [
     path('refresh/', TokenRefreshView.as_view(), name='token_refresh'),  # Renueva el access_token con el refresh_token
     path('protected/', ProtectedView.as_view(), name='protected'),  # Ruta protegida para probar autenticación
     path('logout/', LogoutView.as_view(), name='logout'),  # Ruta para cerrar sesión
-    path('profile/', ProfileView.as_view(), name='profile'),
-
+    path('profile/', ProfileView.as_view(), name='profile'), # Perfil de usuario
+    path('profile/<int:user_id>/', ProfileView.as_view(), name='profile-detail'),  # Perfil de otro usuario (solo admin)
 ]
