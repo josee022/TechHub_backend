@@ -15,4 +15,4 @@ class Device(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)  # Relación con CustomUser
 
     def __str__(self):
-        return str(self.nombre) if self.nombre else ''
+        return str(self.nombre)
