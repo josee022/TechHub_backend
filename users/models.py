@@ -15,8 +15,8 @@ class CustomUser(AbstractUser):
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='user')  # Rol del usuario
 
     def __str__(self):
-        """ Retorna el email como representación del usuario. """
-        return self.email
+        """ Retorna el username como representación del usuario. """
+        return str(self.username)
 
 User = get_user_model()
 
