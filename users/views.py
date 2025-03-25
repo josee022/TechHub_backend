@@ -8,6 +8,7 @@ from rest_framework.exceptions import PermissionDenied  # Importar excepción pa
 from .models import CustomUser, Profile  # Modelo de usuario personalizado
 from .serializers import UserSerializer, RegisterSerializer, ProfileSerializer  # Serializadores para manejar usuarios
 from .permissions import IsOwnerOrAdmin # Permisos personalizados
+from rest_framework.parsers import MultiPartParser, FormParser
 
 class RegisterView(generics.CreateAPIView):
     """ Registra nuevos usuarios (sin autenticación previa). """
@@ -49,13 +50,18 @@ class ProfileView(APIView):
     """Vista para que un usuario autenticado pueda ver y actualizar su perfil."""
     permission_classes = [IsAuthenticated, IsOwnerOrAdmin]  # Solo autenticados, permisos aplicados
 
+    # Añadir los parsers para manejar archivos
+    parser_classes = [MultiPartParser, FormParser]
+
     def get_object(self, request, user_id=None):
         """Obtiene el perfil del usuario:"""
         if user_id:  # Si se pasa un ID en la URL...
             if request.user.role == "admin":  # Solo los admins pueden acceder a perfiles de otros usuarios
                 return Profile.objects.get(user__id=user_id)
+            elif request.user.id == user_id:  # El usuario puede ver su propio perfil
+                return request.user.profile
             else:
-                raise PermissionDenied("No tienes permisos para acceder a este perfil.") # Bloquear acceso a otros perfiles
+                raise PermissionDenied("No tienes permisos para acceder a este perfil.")  # Bloquear acceso a otros perfiles
 
         return request.user.profile  # Si no se especifica ID, se accede al propio perfil
 
@@ -71,8 +77,10 @@ class ProfileView(APIView):
         profile = self.get_object(request, user_id)  # Obtiene el perfil correcto
         self.check_object_permissions(request, profile)  # Aplica los permisos
 
+        # Aseguramos que los datos de perfil (incluyendo imagen) lleguen correctamente
         serializer = ProfileSerializer(profile, data=request.data, partial=True)
+
         if serializer.is_valid():
-            serializer.save()
+            serializer.save()  # Guardar los datos, incluyendo la imagen si está presente
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

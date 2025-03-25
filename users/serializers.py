@@ -22,7 +22,23 @@ class RegisterSerializer(serializers.ModelSerializer):
         return super().create(validated_data)  # Guarda el usuario con la contraseña encriptada
 
 class ProfileSerializer(serializers.ModelSerializer):
-    """Serializador para actualizar el perfil del usuario."""
+    user = UserSerializer()
+    username = serializers.CharField(write_only=True, required=False)
+
     class Meta:
         model = Profile
-        fields = ['avatar', 'bio', 'location']  # Campos que el usuario puede actualizar
+        fields = ['user', 'avatar', 'bio', 'location', 'username']
+
+    def update(self, instance, validated_data):
+        # Actualizar el username si se proporciona
+        if 'username' in validated_data:
+            user = instance.user
+            user.username = validated_data.pop('username')
+            user.save()
+
+        # Actualizar los demás campos del perfil
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+
+        return instance
