@@ -5,10 +5,13 @@ from rest_framework.response import Response  # Respuestas JSON
 from rest_framework.permissions import IsAuthenticated  # Restringe acceso a usuarios autenticados
 from rest_framework_simplejwt.tokens import RefreshToken  # Para invalidar tokens en el logout
 from rest_framework.exceptions import PermissionDenied  # Importar excepción para denegar permisos
+from django.contrib.auth import authenticate
 from .models import CustomUser, Profile  # Modelo de usuario personalizado
 from .serializers import UserSerializer, RegisterSerializer, ProfileSerializer  # Serializadores para manejar usuarios
 from .permissions import IsOwnerOrAdmin # Permisos personalizados
 from rest_framework.parsers import MultiPartParser, FormParser
+import logging
+logger = logging.getLogger(__name__)
 
 class RegisterView(generics.CreateAPIView):
     """ Registra nuevos usuarios (sin autenticación previa). """
@@ -17,8 +20,23 @@ class RegisterView(generics.CreateAPIView):
     permission_classes = [permissions.AllowAny]  # Accesible para cualquier usuario
 
 class LoginView(TokenObtainPairView):
-    """ Autenticación con JWT (manejado automáticamente por Simple JWT). """
-    pass
+    def post(self, request, *args, **kwargs):
+        try:
+            logger.info(f"DEBUG - Login attempt for user: {request.data.get('username')}")
+            response = super().post(request, *args, **kwargs)
+            user = CustomUser.objects.get(username=request.data['username'])
+            user_data = {
+                'id': user.id,
+                'username': user.username,
+                'email': user.email,
+                'role': user.role
+            }
+            response.data['user'] = user_data
+            logger.info(f"DEBUG - Login response data: {response.data}")
+            return response
+        except Exception as e:
+            logger.error(f"DEBUG - Login error: {str(e)}")
+            raise
 
 class ProtectedView(APIView):
     """ Ruta protegida: solo accesible con un token válido. """
@@ -26,12 +44,22 @@ class ProtectedView(APIView):
 
     def get(self, request):
         """ Devuelve info del usuario autenticado. """
-        user_data = {
-            "username": request.user.username,
-            "email": request.user.email,
-            "role": request.user.role,
-        }
-        return Response({"message": "Acceso permitido", "user": user_data})
+        try:
+            logger.info(f"DEBUG - Protected endpoint accessed by user: {request.user.username}")
+            user_data = {
+                "id": request.user.id,
+                "username": request.user.username,
+                "email": request.user.email,
+                "role": request.user.role,
+            }
+            logger.info(f"DEBUG - Protected endpoint response: {user_data}")
+            return Response({"message": "Acceso permitido", "user": user_data})
+        except Exception as e:
+            logger.error(f"DEBUG - Protected endpoint error: {str(e)}")
+            return Response(
+                {"error": "Error al obtener datos del usuario"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 class LogoutView(APIView):
     """ Cierra sesión invalidando el refresh token. """
