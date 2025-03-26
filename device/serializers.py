@@ -1,8 +1,9 @@
 from rest_framework import serializers
 from .models import Device
+from users.serializers import UserSerializer
 
 class DeviceSerializer(serializers.ModelSerializer):
-    user = serializers.PrimaryKeyRelatedField(read_only=True)  # Devuelve solo el ID del usuario
+    user = UserSerializer(read_only=True)  # Devuelve toda la info del usuario
 
     class Meta:
         model = Device
