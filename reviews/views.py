@@ -24,8 +24,8 @@ class ReviewViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         device_id = self.kwargs.get('device_id')
         if device_id:
-            return Review.objects.filter(device_id=device_id, is_active=True)
-        return Review.objects.filter(is_active=True)
+            return Review.objects.filter(device_id=device_id)
+        return Review.objects.all()
 
     def perform_create(self, serializer):
         device_id = self.kwargs.get('device_id')
@@ -51,9 +51,9 @@ class ReviewViewSet(viewsets.ModelViewSet):
     def perform_destroy(self, instance):
         if instance.user != self.request.user:
             raise PermissionDenied("You can only delete your own reviews")
-        instance.is_active = False
-        instance.save()
-        Review.update_device_ratings(instance.device_id)
+        device_id = instance.device.id
+        instance.delete()
+        Review.update_device_ratings(device_id)
 
 class AverageRatingView(APIView):
     permission_classes = [AllowAny]

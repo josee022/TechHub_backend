@@ -13,7 +13,12 @@ class ReviewSerializer(serializers.ModelSerializer):
     def get_user(self, obj):
         try:
             profile = getattr(obj.user, 'profile', None)
-            avatar_url = profile.avatar.url if profile and hasattr(profile, 'avatar') else None
+            avatar_url = None
+            if profile:
+                try:
+                    avatar_url = profile.avatar.url
+                except ValueError:
+                    avatar_url = None
             return {
                 'id': obj.user.id,
                 'username': obj.user.username,
