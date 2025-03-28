@@ -4,8 +4,11 @@ from .views import DeviceViewSet
 
 # Crear el router y registrar el viewset
 router = DefaultRouter()
-router.register(r'devices', DeviceViewSet)
+router.register(r'devices', DeviceViewSet, basename='device')
+
+app_name = 'devices'
 
 urlpatterns = [
-    path('api/', include(router.urls)),  # Incluir las URLs generadas automáticamente
+    *router.urls,
+    path('<int:device_id>/reviews/', include('reviews.urls')),
 ]

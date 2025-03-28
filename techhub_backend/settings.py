@@ -44,13 +44,15 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'rest_framework',
-    'corsheaders',
-    'drf_spectacular',
-    'rest_framework_simplejwt',
+    'rest_framework',  # Django REST Framework
+    'corsheaders',  # CORS
+    'drf_spectacular',  # Documentación API
+    'rest_framework_simplejwt',  # JWT
     'rest_framework_simplejwt.token_blacklist',
+    'django_filters',  # Filtros
     'users',
     'device',
+    'reviews',
 ]
 
 MIDDLEWARE = [
@@ -146,11 +148,12 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 REST_FRAMEWORK = {
+    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',  # Habilitar DRF Spectacular
-    'PAGE_SIZE': 10,  # Número de dispositivos por página
+    'PAGE_SIZE': 9,  # Número de dispositivos por página
 }
 
 SIMPLE_JWT = {
