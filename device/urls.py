@@ -1,3 +1,4 @@
+from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import DeviceViewSet
 
@@ -5,5 +6,9 @@ from .views import DeviceViewSet
 router = DefaultRouter()
 router.register(r'devices', DeviceViewSet, basename='device')
 
-# Las URLs se incluirán directamente en la ruta /api/ desde el urls.py principal
-urlpatterns = router.urls
+app_name = 'devices'
+
+urlpatterns = [
+    *router.urls,
+    path('<int:device_id>/reviews/', include('reviews.urls')),
+]

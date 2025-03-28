@@ -25,6 +25,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/users/', include('users.urls')),
     path('api/', include('device.urls')),  # Incluir las URLs de devices en /api/
+    path('api/reviews/', include('reviews.urls')),
 
     # Documentación generada automáticamente.
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),

@@ -15,6 +15,8 @@ class Device(models.Model):
     modelo_firmware = models.CharField(max_length=100, null=True, blank=True)
     last_updated = models.DateTimeField(auto_now=True)
     imagen = models.ImageField(upload_to='devices/', null=True, blank=True)
+    average_rating = models.FloatField(default=0.0)
+    review_count = models.IntegerField(default=0)
     user = models.ForeignKey(User, on_delete=models.CASCADE)  # Relación con CustomUser
 
     def __str__(self):
