@@ -36,7 +36,7 @@ class Profile(models.Model):
         return f"Perfil de {self.user}"
 
 @receiver(post_save, sender=User)
-def create_profile(sender, instance, created, **kwargs):
+def create_profile(sender=None, instance=None, created=None, **kwargs):
     """ Crea automáticamente un perfil cuando se registra un usuario. """
     if created:
         Profile.objects.create(user=instance)
