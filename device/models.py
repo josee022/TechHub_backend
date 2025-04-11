@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.db.models import Manager  # Add this import for type hinting
+from cloudinary.models import CloudinaryField  # Importar CloudinaryField
 
 User = get_user_model()  # Esto obtendrá el modelo de usuario personalizado
 
@@ -14,7 +15,7 @@ class Device(models.Model):
     descripcion = models.TextField(null=True, blank=True)
     modelo_firmware = models.CharField(max_length=100, null=True, blank=True)
     last_updated = models.DateTimeField(auto_now=True)
-    imagen = models.ImageField(upload_to='devices/', null=True, blank=True)
+    imagen = CloudinaryField('image', folder='devices', null=True, blank=True)  # Usar CloudinaryField en lugar de ImageField
     average_rating = models.FloatField(default=0.0)
     review_count = models.IntegerField(default=0)
     user = models.ForeignKey(User, on_delete=models.CASCADE)  # Relación con CustomUser

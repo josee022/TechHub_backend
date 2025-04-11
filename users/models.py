@@ -3,6 +3,7 @@ from django.db import models  # Modelos de base de datos
 from django.contrib.auth import get_user_model
 from django.dispatch import receiver
 from django.db.models.signals import post_save
+from cloudinary.models import CloudinaryField  # Importar CloudinaryField
 
 class CustomUser(AbstractUser):
     """ Usuario personalizado con un campo de rol adicional. """
@@ -25,7 +26,7 @@ class Profile(models.Model):
     objects = models.Manager()  # Definir el manager explícitamente (opcional)
 
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
-    avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)  # Imagen opcional
+    avatar = CloudinaryField('image', folder='avatars', blank=True, null=True)  # Usar CloudinaryField en lugar de ImageField
     bio = models.TextField(blank=True, null=True)  # Biografía
     location = models.CharField(max_length=100, blank=True, null=True)  # Ubicación
     created_at = models.DateTimeField(auto_now_add=True)  # Fecha de creación
