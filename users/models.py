@@ -38,8 +38,11 @@ class Profile(models.Model):
         
     def avatar_url(self):
         """Devuelve la URL completa del avatar de Cloudinary."""
-        if self.avatar and self.avatar.public_id:
-            return cloudinary.CloudinaryImage(self.avatar.public_id).build_url(secure=True)
+        try:
+            if self.avatar and hasattr(self.avatar, 'public_id') and self.avatar.public_id:
+                return cloudinary.CloudinaryImage(self.avatar.public_id).build_url(secure=True)
+        except Exception as e:
+            print(f"Error al generar URL de avatar: {e}")
         return None
 
 @receiver(post_save, sender=User)
