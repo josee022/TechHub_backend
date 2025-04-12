@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth import get_user_model
 from django.db.models import Manager  # Add this import for type hinting
 from cloudinary.models import CloudinaryField  # Importar CloudinaryField
+import cloudinary
 
 User = get_user_model()  # Esto obtendrá el modelo de usuario personalizado
 
@@ -22,3 +23,9 @@ class Device(models.Model):
 
     def __str__(self):
         return str(self.nombre)
+        
+    def imagen_url(self):
+        """Devuelve la URL completa de la imagen de Cloudinary."""
+        if self.imagen and self.imagen.public_id:
+            return cloudinary.CloudinaryImage(self.imagen.public_id).build_url(secure=True)
+        return None
