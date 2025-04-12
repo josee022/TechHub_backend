@@ -24,10 +24,17 @@ class RegisterSerializer(serializers.ModelSerializer):
 class ProfileSerializer(serializers.ModelSerializer):
     user = UserSerializer()
     username = serializers.CharField(write_only=True, required=False)
+    avatar_url = serializers.SerializerMethodField()
 
     class Meta:
         model = Profile
-        fields = ['user', 'avatar', 'bio', 'location', 'username']
+        fields = ['user', 'avatar', 'bio', 'location', 'username', 'avatar_url']
+
+    def get_avatar_url(self, obj):
+        """Obtiene la URL completa del avatar."""
+        if obj.avatar:
+            return obj.avatar_url()
+        return None
 
     def update(self, instance, validated_data):
         # Actualizar el username si se proporciona

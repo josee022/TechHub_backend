@@ -4,6 +4,7 @@ from django.contrib.auth import get_user_model
 from django.dispatch import receiver
 from django.db.models.signals import post_save
 from cloudinary.models import CloudinaryField  # Importar CloudinaryField
+import cloudinary
 
 class CustomUser(AbstractUser):
     """ Usuario personalizado con un campo de rol adicional. """
@@ -34,6 +35,12 @@ class Profile(models.Model):
     def __str__(self):
         """ Retorna la relación con el usuario. """
         return f"Perfil de {self.user}"
+        
+    def avatar_url(self):
+        """Devuelve la URL completa del avatar de Cloudinary."""
+        if self.avatar and self.avatar.public_id:
+            return cloudinary.CloudinaryImage(self.avatar.public_id).build_url(secure=True)
+        return None
 
 @receiver(post_save, sender=User)
 def create_profile(sender=None, instance=None, created=None, **kwargs):
