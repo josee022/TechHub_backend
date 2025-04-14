@@ -12,6 +12,14 @@ class DeviceSerializer(serializers.ModelSerializer):
         
     def get_imagen_url(self, obj):
         """Obtiene la URL completa de la imagen."""
-        if obj.imagen:
-            return obj.imagen_url()
+        try:
+            if obj.imagen:
+                url = obj.imagen_url()
+                if url:
+                    return url
+                # Fallback: intentar obtener la URL directamente del campo CloudinaryField
+                if hasattr(obj.imagen, 'url'):
+                    return obj.imagen.url
+        except Exception as e:
+            print(f"Error en get_imagen_url: {e}")
         return None

@@ -26,6 +26,9 @@ class Device(models.Model):
         
     def imagen_url(self):
         """Devuelve la URL completa de la imagen de Cloudinary."""
-        if self.imagen and self.imagen.public_id:
-            return cloudinary.CloudinaryImage(self.imagen.public_id).build_url(secure=True)
+        try:
+            if self.imagen and hasattr(self.imagen, 'public_id') and self.imagen.public_id:
+                return cloudinary.CloudinaryImage(self.imagen.public_id).build_url(secure=True)
+        except Exception as e:
+            print(f"Error al generar URL de imagen: {e}")
         return None

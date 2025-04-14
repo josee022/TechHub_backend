@@ -32,8 +32,16 @@ class ProfileSerializer(serializers.ModelSerializer):
 
     def get_avatar_url(self, obj):
         """Obtiene la URL completa del avatar."""
-        if obj.avatar:
-            return obj.avatar_url()
+        try:
+            if obj.avatar:
+                url = obj.avatar_url()
+                if url:
+                    return url
+                # Fallback: intentar obtener la URL directamente del campo CloudinaryField
+                if hasattr(obj.avatar, 'url'):
+                    return obj.avatar.url
+        except Exception as e:
+            print(f"Error en get_avatar_url: {e}")
         return None
 
     def update(self, instance, validated_data):
