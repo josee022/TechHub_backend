@@ -8,7 +8,8 @@ class DeviceSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Device
-        fields = '__all__'  # Incluye todos los campos del modelo
+        #fields = '__all__'  # Incluye todos los campos del modelo
+        fields = [f.name for f in Device._meta.fields] + ['imagen_url']
         
     def get_imagen_url(self, obj):
         """Obtiene la URL completa de la imagen."""
